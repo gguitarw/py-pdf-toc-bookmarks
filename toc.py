@@ -30,7 +30,7 @@ def extract_line(line: str) -> Union[TocEntry, None]:
     elif (match := SECTION_REGEX.match(line)) is not None:
         # a.b.c text page
         groups = match.groups()
-        level = groups[0].count('.') + 1
+        level = groups[0].count('.')
         text = f'{groups[0]} {groups[1].strip()}'
         return (level, text, int(groups[2]))
     elif (match := OTHER_REGEX.match(line)) is not None:
