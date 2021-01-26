@@ -1,7 +1,9 @@
 
 import re
+from pprint import pprint
 from pathlib import Path
 from typing import Iterable, List, Tuple, Union
+from enum import Enum
 
 import pdfplumber
 
@@ -9,7 +11,7 @@ import pdfplumber
 PDF_PATH = 'cs-455_computer-networking.pdf'
 CHAPTER_PATTERN = "^(Chapter \\d)\\s+(.*)\\s+(\\d+)$"
 CHAPTER_REGEX = re.compile(CHAPTER_PATTERN)
-SECTION_PATTERN = "^(\\d(?:\\.\\d+)+)\\s+(.*)\\s+(\\d+)$"
+SECTION_PATTERN = "^(\\d(?:\\.\\d+)+)\\s+(.*)\\s+(\\d+)?$"
 SECTION_REGEX = re.compile(SECTION_PATTERN)
 OTHER_PATTERN = "^(.*)\\s+(\\d+)$"
 OTHER_REGEX = re.compile(OTHER_PATTERN)
@@ -32,7 +34,11 @@ def extract_line(line: str) -> Union[TocEntry, None]:
         groups = match.groups()
         level = groups[0].count('.')
         text = f'{groups[0]} {groups[1].strip()}'
-        return (level, text, int(groups[2]))
+        if groups[2] is None:
+            # Multiline entry
+            return (level, text, -1)  # -1 should be checked for in caller
+        else:
+            return (level, text, int(groups[2]))
     elif (match := OTHER_REGEX.match(line)) is not None:
         # text page
         groups = match.groups()
@@ -43,14 +49,29 @@ def extract_line(line: str) -> Union[TocEntry, None]:
 
 def extract_lines(page_text: str) -> List[TocEntry]:
     lines = []
+    partial = []
     for line in page_text.strip().split('\n'):
         extracted = extract_line(line)
-        if extracted is not None:
+        if extracted is None:
+            continue
+        elif extracted[2] == -1:
+            partial.append(extracted)
+        elif len(partial):
+            # Take level of first partial, page of last, and combine text of all
+            partial.append(extracted)
+            completed = (
+                partial[0][0],
+                ' '.join(p[1] for p in partial),
+                partial[-1][2],
+            )
+            lines.append(completed)
+            partial = []
+        else:
             lines.append(extracted)
     return lines
 
 
-def extract_toc(pdf_path, toc_pages: Iterable[int]):
+def extract_toc(pdf_path, toc_pages: Iterable[int]) -> List[TocEntry]:
     toc_lines = []
     with pdfplumber.open(pdf_path) as pdf:
         for page_num in toc_pages:
@@ -70,6 +91,7 @@ def format_for_jpdf(entry: TocEntry) -> str:
 
 def create_toc_txt(pdf_path: Union[str, Path], toc_pages: Iterable[int]):
     toc = extract_toc(pdf_path, toc_pages)
+    pprint(toc, width=120)
     formatted = '\n'.join(format_for_jpdf(entry) for entry in toc)
 
     out_prefix = Path(pdf_path).stem
