@@ -1,7 +1,7 @@
 
 import re
 from pathlib import Path
-from typing import Iterable, List, Match, Tuple, Union
+from typing import Iterable, List, Tuple, Union
 
 import pdfplumber
 
@@ -40,13 +40,6 @@ def extract_line(line: str) -> Union[TocEntry, None]:
     else:
         return None
 
-    # match = CHAPTER_REGEX.match(line)
-    # if match is not None:
-    #     groups = match.groups()
-    #     print(groups)
-    # print(match)
-    # print(f'"{line}"')
-
 
 def extract_lines(page_text: str) -> List[TocEntry]:
     lines = []
@@ -65,22 +58,23 @@ def extract_toc(pdf_path, toc_pages: Iterable[int]):
             text = page.extract_text()
             toc_lines.extend(extract_lines(text))
 
-        # page_num = pdf.pages[toc_start]
-        # print(first_page.chars[0])
-
-        # toc_text = page_num.extract_text()
-        # print(toc_text)
-        # for line in toc_text.strip().split('\n'):
-        #     print(f'"{line}"')
-
-        # toc_table = toc_page.extract_tables()
-        # print(toc_table)
-
     return toc_lines
+
+
+def format_for_jpdf(entry: TocEntry) -> str:
+    tabs = '\t' * entry[0]
+    text = entry[1]
+    page = entry[2]
+    return f'{tabs}{text}/{page}'
 
 
 def create_toc_txt(pdf_path: Union[str, Path], toc_pages: Iterable[int]):
     toc = extract_toc(pdf_path, toc_pages)
+    formatted = '\n'.join(format_for_jpdf(entry) for entry in toc)
+
+    out_prefix = Path(pdf_path).stem
+    with open(f'{out_prefix}-bookmarks.txt', 'w', encoding='utf8') as w:
+        w.write(formatted)
 
 
 if __name__ == '__main__':
