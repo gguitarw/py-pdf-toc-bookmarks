@@ -31,11 +31,12 @@ def extract_line(line: str) -> Union[TocEntry, None]:
         # a.b.c text page
         groups = match.groups()
         level = groups[0].count('.') + 1
-        return (level, groups[1].strip(), int(groups[2]))
+        text = f'{groups[0]} {groups[1].strip()}'
+        return (level, text, int(groups[2]))
     elif (match := OTHER_REGEX.match(line)) is not None:
         # text page
         groups = match.groups()
-        print(groups)
+        return (1, groups[0].strip(), int(groups[1]))
     else:
         return None
 
@@ -80,7 +81,6 @@ def extract_toc(pdf_path, toc_pages: Iterable[int]):
 
 def create_toc_txt(pdf_path: Union[str, Path], toc_pages: Iterable[int]):
     toc = extract_toc(pdf_path, toc_pages)
-    # print(toc)
 
 
 if __name__ == '__main__':
