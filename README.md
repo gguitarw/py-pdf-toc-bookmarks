@@ -1,5 +1,56 @@
 # py-pdf-toc-bookmarks
 
+## Python Development Environment
+
+### conda
+
+To create a new conda environment from the provided `environment.yml`:
+
+```sh
+conda env create -f environment.yml
+```
+
+Activate the environment:
+
+```sh
+conda activate pdf-toc
+```
+
+To update the environment with any changes to `environment.yml`:
+
+```sh
+conda env update pdf-toc -f environment.yml --prune
+```
+
+### venv
+
+Create new virtual environment
+
+```sh
+python -m venv .venv
+```
+
+Activate the environment:
+
+```sh
+# Unix (bash)
+source .venv/bin/activate
+# Windows
+.venv\Scripts\activate.bat
+```
+
+Install requirements with pip:
+
+```sh
+pip install -r requirements.txt
+```
+
+Update requirements:
+
+```sh
+pip install -r requirements.txt --upgrade
+```
+
 ## Adding bookmarks to PDFs
 
 Download [JPdfBookmarks](https://sourceforge.net/p/jpdfbookmarks)
