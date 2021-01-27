@@ -19,6 +19,14 @@ TOC_START = 18
 TOC_END = 24
 ENTRY_PAGE_OFFSET = 24
 
+# Entries that should be before the main content
+PRE_TOC = [
+    (0, 'About the Authors', 0 - ENTRY_PAGE_OFFSET),
+    (0, 'Preface', 4 - ENTRY_PAGE_OFFSET),
+    (0, 'Brief Contents', 16 - ENTRY_PAGE_OFFSET),
+    (0, 'Table of Contents', 18 - ENTRY_PAGE_OFFSET),
+]
+
 
 # Level, Text, Page
 TocEntry = Tuple[int, str, int]
@@ -73,7 +81,7 @@ def extract_lines(page_text: str) -> List[TocEntry]:
 
 
 def extract_toc(pdf_path, toc_pages: Iterable[int]) -> List[TocEntry]:
-    toc_lines = []
+    toc_lines = PRE_TOC
     with pdfplumber.open(pdf_path) as pdf:
         for page_num in toc_pages:
             page = pdf.pages[page_num]
