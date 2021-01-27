@@ -2,7 +2,7 @@
 import re
 from pprint import pprint
 from pathlib import Path
-from typing import Iterable, List, Tuple, Union
+from typing import Dict, Iterable, List, Tuple, Union
 from enum import Enum
 
 import pdfplumber
@@ -26,6 +26,11 @@ PRE_TOC = [
     (0, 'Brief Contents', 16 - ENTRY_PAGE_OFFSET),
     (0, 'Table of Contents', 18 - ENTRY_PAGE_OFFSET),
 ]
+
+OVERRIDE_LEVEL: Dict[Tuple[str, int], int] = {
+    ('References', 691 + ENTRY_PAGE_OFFSET): 0,
+    ('Index', 731 + ENTRY_PAGE_OFFSET): 0,
+}
 
 
 # Level, Text, Page
@@ -92,9 +97,13 @@ def extract_toc(pdf_path, toc_pages: Iterable[int]) -> List[TocEntry]:
 
 
 def format_for_jpdf(entry: TocEntry) -> str:
-    tabs = '\t' * entry[0]
+    level = entry[0]
     text = entry[1]
     page = entry[2] + ENTRY_PAGE_OFFSET
+    if (text, page) in OVERRIDE_LEVEL:
+        level = OVERRIDE_LEVEL[(text, page)]
+        print(f'Overrode {text} to be level {level}')
+    tabs = '\t' * level
     return f'{tabs}{text}/{page}'
 
 
