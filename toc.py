@@ -17,6 +17,7 @@ OTHER_PATTERN = "^(.*)\\s+(\\d+)$"
 OTHER_REGEX = re.compile(OTHER_PATTERN)
 TOC_START = 18
 TOC_END = 24
+ENTRY_PAGE_OFFSET = 24
 
 
 # Level, Text, Page
@@ -85,7 +86,7 @@ def extract_toc(pdf_path, toc_pages: Iterable[int]) -> List[TocEntry]:
 def format_for_jpdf(entry: TocEntry) -> str:
     tabs = '\t' * entry[0]
     text = entry[1]
-    page = entry[2]
+    page = entry[2] + ENTRY_PAGE_OFFSET
     return f'{tabs}{text}/{page}'
 
 
